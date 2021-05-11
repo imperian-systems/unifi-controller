@@ -104,6 +104,12 @@ class InformPacketDecrypter {
 
         if($this->snappy)
         {
+            if(!function_exists("snappy_uncompress"))
+            {
+                $message = "Device sent packet compressed with snappy compression, but snappy extension is not installed.\nhttps://github.com/kjdev/php-ext-snappy";
+                Log::error($message);
+                throw new \Exception($message);
+            }
 	    $this->plain = snappy_uncompress($this->compressedPayload);
         }
 

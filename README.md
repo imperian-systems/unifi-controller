@@ -2,6 +2,12 @@
 
 ## Note: This package is backend only, no user interface is included
 
+### Install snappy PHP extension
+
+* https://github.com/kjdev/php-ext-snappy
+
+### Setup Unifi controller
+
 * Clone the repo
 
 ```
