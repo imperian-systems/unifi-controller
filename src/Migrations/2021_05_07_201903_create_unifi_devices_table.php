@@ -38,7 +38,7 @@ class CreateUnifiDevicesTable extends Migration
             $table->string('hash_id');
             $table->string('hostname');
             $table->bigInteger('hw_caps');
-            $table->string('inform_ip');
+            $table->string('inform_ip')->nullable();
             $table->string('inform_url');
             $table->boolean('internet');
             $table->string('ip');
