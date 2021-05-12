@@ -14,6 +14,7 @@ class UnifiControllerProvider extends ServiceProvider
      */
     public function register()
     {
+        $this->mergeConfigFrom(__DIR__.'/../config/config.php', 'unifi-controller');
     }
 
     /**
@@ -29,5 +30,9 @@ class UnifiControllerProvider extends ServiceProvider
         }
 
         $this->loadMigrationsFrom(__DIR__.'/Migrations');
+
+        $this->publishes([
+            __DIR__.'/../config/config.php' => config_path('unifi-controller.php'),
+        ], 'config');
     }
 }

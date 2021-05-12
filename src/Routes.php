@@ -8,6 +8,6 @@ Route::group(['middleware'=>'api' ], function () {
     Route::post('/inform', 'ImperianSystems\UnifiController\Controllers\InformController@inform');
 });
 
-Route::group(['middleware'=>'api', 'prefix'=>'api' ], function () {
+Route::group(['middleware'=>config("unifi-controller.middleware"), 'prefix'=>'api' ], function () {
     Route::resource('device', UnifiDeviceController::class);
 });
