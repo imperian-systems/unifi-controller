@@ -43,6 +43,16 @@ composer require imperian-systems/unifi-controller
 php artisan migrate
 ```
 
+* Install configuration file
+
+```
+php artisan vendor:publish --provider="ImperianSystems\UnifiController\UnifiControllerProvider" --tag="config"
+```
+
+* If you do not intend to setup user logins for this site,
+  you'll need to edit ```config/unifi-controller.php```
+  and comment out ```auth:api```
+
 * Run web server
 
 ```
