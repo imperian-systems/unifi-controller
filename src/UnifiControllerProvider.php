@@ -34,5 +34,9 @@ class UnifiControllerProvider extends ServiceProvider
         $this->publishes([
             __DIR__.'/../config/config.php' => config_path('unifi-controller.php'),
         ], 'config');
+
+        $this->publishes([
+            __DIR__ . '/Seeders/UnifiSiteSeeder.php' => database_path('seeders/UnifiSiteSeeder.php'),
+        ], 'seeders');
     }
 }
