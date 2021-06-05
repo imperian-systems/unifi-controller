@@ -18,7 +18,7 @@ class Snappy
 
     public static function compress($payload)
     {
-        $this->checkSnappy();
+        self::checkSnappy();
         $result = snappy_compress($payload);
         if($result === FALSE)
         {
@@ -30,11 +30,18 @@ class Snappy
 
     public static function uncompress($payload)
     {
-        $this->checkSnappy();
-        $result = snappy_uncompress($payload);
+        $message = "Packet header indicates snappy compression, but snappy was unable to uncompress the data.";
+
+        self::checkSnappy();
+
+        try {
+            $result = snappy_uncompress($payload);
+        } catch (\Exception $e) {
+            throw new \Exception($message);
+        }
+
         if($result === FALSE)
         {
-            $message = "Packet header indicates snappy compression, but snappy was unable to uncompress the data.";
             throw new \Exception($message);
         }
         return $result;
