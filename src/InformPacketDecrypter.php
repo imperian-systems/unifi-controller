@@ -44,7 +44,8 @@ class InformPacketDecrypter {
         $this->payloadLength = intval(bin2hex(substr($packet, 36, 4)), 16);
 
         $this->aad = substr($packet, 0, 40);
-        $this->payload = substr($packet, 40, strlen($packet) - 56);
+        if($this->aesgcm) $this->payload = substr($packet, 40, strlen($packet) - 56);
+        else $this->payload = substr($packet, 40, strlen($packet) - 40);
         $this->tag = substr($packet, -16);
 
         $this->dump();
