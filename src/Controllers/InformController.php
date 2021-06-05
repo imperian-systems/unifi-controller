@@ -22,13 +22,19 @@ class InformController extends \App\Http\Controllers\Controller
         }
 
         try {
-            $result = $p->uncompress();
+            $json = $p->uncompress();
         } catch (\Exception $e) {
             Log::error($e->getMessage());
             return;
         }
 
-        if(!$result) return;
+        try {
+            $result = json_decode($json, null, 512, JSON_THROW_ON_ERROR);
+        } catch (\JsonException $e) {
+            Log::error("Failed to decode JSON: ".$e->getMessage());
+            return;
+        }
+
         $data = array();
         foreach($result as $k=>$v)
         {   

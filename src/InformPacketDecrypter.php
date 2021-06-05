@@ -2,10 +2,11 @@
 
 namespace ImperianSystems\UnifiController;
 
-use phpseclib3\Crypt\AES;
-use phpseclib3\Crypt\Random;
-use Sop\GCM\AESGCM;
 use Illuminate\Support\Facades\Log;
+use ImperianSystems\UnifiController\Packet\Encryption\AESGCM;
+use ImperianSystems\UnifiController\Packet\Encryption\AESCBC;
+use ImperianSystems\UnifiController\Packet\Compression\Snappy;
+use ImperianSystems\UnifiController\Packet\Compression\Zlib;
 
 class InformPacketDecrypter {
     public $magic;
@@ -21,7 +22,6 @@ class InformPacketDecrypter {
     public $payloadLength;
     public $payload;
     public $compressedPayload;
-    public $decryptionFailed;
 
     public function __construct($packet)
     {
@@ -48,11 +48,18 @@ class InformPacketDecrypter {
         $this->tag = substr($packet, -16);
 
         $this->dump();
-        $this->_decrypt();
+        $this->decrypt();
     }
 
-    public function _decrypt()
+    public function decrypt()
     {
+        if(!$this->encrypted)
+        {
+            Log::info("Note: Packet was not marked encrypted.");
+            $this->compressedPayload = $this->payload;
+            return;
+        }
+
         if($this->aesgcm)
         {
             $this->decryptGCM();
@@ -65,56 +72,29 @@ class InformPacketDecrypter {
 
     public function decryptGCM()
     {
-        try {
-            $this->compressedPayload = AESGCM::decrypt($this->payload, $this->tag, $this->aad, md5("ubnt", true), $this->initVector);
-        } catch (\Exception $e) {
-            $this->decryptionFailed = $e->getMessage();
-            throw new \Exception("GCM.".$e->getMessage());
-        }
+        $this->compressedPayload = AESGCM::decrypt($this->payload, $this->tag, $this->aad, md5("ubnt", true), $this->initVector);
     }
 
     public function decryptCBC()
     {
-        $cipher = new AES('cbc');
-        $cipher->setIV($this->initVector);
-        $cipher->setKey(md5("ubnt", true));
-        $cipher->disablePadding();
-
-        try {
-            $this->compressedPayload = $cipher->decrypt($this->payload);
-        } catch (\Exception $e) {
-            $this->decryptionFailed = $e->getMessage();
-            throw new \Exception("CBC.".$e->getMessage());
-        }
+        $this->compressedPayload = AESCBC::decrypt($this->payload, md5("ubnt", true), $this->initVector);
     }
 
     public function uncompress()
     {
-
-        $this->plain = $this->compressedPayload;
         if($this->zlib)
         {
-            try {
-                $this->plain = zlib_decode($this->compressedPayload);
-            } catch (\Exception $e) {
-                $this->uncompression_failed = $e->getMessage();
-            throw new \Exception("Uncompres.".$e->getMessage());
-            }
+            $this->plain = Zlib::uncompress($this->compressedPayload);
+            return $this->plain;
         }
 
         if($this->snappy)
         {
-            if(!function_exists("snappy_uncompress"))
-            {
-                $message = "Device sent packet compressed with snappy compression, but snappy extension is not installed.\nhttps://github.com/kjdev/php-ext-snappy";
-                Log::error($message);
-                throw new \Exception($message);
-            }
-	    $this->plain = snappy_uncompress($this->compressedPayload);
+            $this->plain = Snappy::uncompress($this->compressedPayload);
+            return $this->plain;
         }
 
-        $this->json = json_decode($this->plain);
-        return $this->json;
+        throw new \Exception("Unimplemented compression algorithm.");
     }
 
     public function dump()
@@ -126,6 +106,5 @@ class InformPacketDecrypter {
         $self->aad = md5($self->aad);
         $self->tag = md5($self->tag);
         Log::info(print_r($self, 1));
-       
     }
 }
