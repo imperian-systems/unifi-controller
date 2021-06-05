@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Log;
 
 class Snappy
 {
-    private static checkSnappy()
+    private static function checkSnappy()
     {
         if(!function_exists("snappy_uncompress"))
         {
