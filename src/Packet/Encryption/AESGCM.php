@@ -9,7 +9,7 @@ class AESGCM
         try {
             $result = \Sop\GCM\AESGCM::decrypt($payload, $tag, $aad, $key, $initVector);
         } catch (\Exception $e) {
-            throw new \Exception("ImperianSystems\UnifiController\Packet\Encryption\AESGCM:\n".$e->getMessage());
+            throw new \Exception("ImperianSystems\UnifiController\Packet\Encryption\AESGCM, key - ".bin2hex($key).":\n".$e->getMessage());
         }
 
         return $result;
